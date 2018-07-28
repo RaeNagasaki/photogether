@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var _ = require('lodash');
 
 var AWS = require("aws-sdk");
 
@@ -33,7 +34,7 @@ router.get('/:url', function(req, res, next) {
 router.get('/', function(req, res, next) {
   
   console.log(req.query);
-  if (!(Object.keys(req.query).length === 0 && req.query.constructor === Object)) {
+  if (!_.isEmpty(req.query)) {
     var params = {
         TableName: "MyToDoList",
         Item:{
@@ -73,7 +74,7 @@ router.get('/', function(req, res, next) {
           console.log("Scan succeeded.");
           // continue scanning if we have more movies, because
           // scan can retrieve a maximum of 1MB of data
-          if (typeof data.LastEvaluatedKey != "undefined") {
+          if (!_.isUndefined(data.LastEvaluatedKey)) {
               console.log("Scanning for more...");
               params.ExclusiveStartKey = data.LastEvaluatedKey;
               docClient.scan(params, onScan);
@@ -83,8 +84,6 @@ router.get('/', function(req, res, next) {
           }
       }
   }
-
- 
 });
 
   
