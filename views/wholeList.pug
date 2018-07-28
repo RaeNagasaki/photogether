@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1 Things To Do
+  
+  ul
+    for item in Items
+      - var urlAddress = "http://localhost:3000/todo/" + item.url
+      li
+        a(href= urlAddress) #{item.title}
+    
+  
+  h1 New To Do
+  
+  form(action="/todo", method="GET")
+    input(type="text", name="listTitle", placeholder="List Title")
+    br
+    input(type="text", name="whatToDo", placeholder="What To Do")
+    br
+    input(type="submit", value="submit")
+  
+  

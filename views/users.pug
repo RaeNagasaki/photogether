@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= title
+  p This is #{userId}.
+  
+  div
+    for tag in tags
+      div
+        p #{tag}
+    else
+      p No images.
+
+  img(src=url)
