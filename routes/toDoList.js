@@ -67,6 +67,10 @@ router.get('/', function(req, res, next) {
   console.log("Scanning MyToDoList table.");
   docClient.scan(params, onScan);
   
+  let dataArray = [];
+  let wholeDataArray = [];
+  let wholeDataObject = {};
+  
   function onScan(err, data) {
       if (err) {
           console.error("Unable to scan the table. Error JSON:", JSON.stringify(err, null, 2));
@@ -75,12 +79,23 @@ router.get('/', function(req, res, next) {
           // continue scanning if we have more movies, because
           // scan can retrieve a maximum of 1MB of data
           if (!_.isUndefined(data.LastEvaluatedKey)) {
+              dataArray.push(data);
               console.log("Scanning for more...");
               params.ExclusiveStartKey = data.LastEvaluatedKey;
               docClient.scan(params, onScan);
           } else {
+            dataArray.push(data);
+            console.log("data: ");
             console.log(data);
-            res.render('wholeList', data);
+            console.log("dataArray: ");
+            console.log(dataArray);
+            dataArray.forEach(function(element){
+              wholeDataArray.push(element.Items);
+            });
+            wholeDataArray = _.flattenDeep(wholeDataArray);
+            wholeDataObject.Items = wholeDataArray;
+            console.log(wholeDataObject);
+            res.render('wholeList', wholeDataObject);
           }
       }
   }
