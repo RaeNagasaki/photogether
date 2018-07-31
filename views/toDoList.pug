@@ -1,8 +1,24 @@
 extends layout
 
 block content
+  - var urlAddress = "http://localhost:3000/todo/"
+  a(href= urlAddress)
+    button(onclick="") Whole List
   h1 #{title}
   div
-    for task in list
-      h3 #{task}
-      
+    ul
+      for task in list
+        li #{task}
+
+  h2 Add Things to do
+
+  form(action="/todo/update", method="GET")
+    input(type="text", name="whatToDo", placeholder="What To Do")
+    br
+    input(type="submit", value="submit")
+    input(type="hidden", name="url", value=url)
+    br
+    input(type="hidden", name="title", value=title)
+    br
+    input(type="hidden", name="list", value=list)
+    br

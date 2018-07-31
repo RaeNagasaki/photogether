@@ -12,7 +12,7 @@ AWS.config.update({
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 /* GET users listing. */
-router.get('/:url', function(req, res, next) {
+router.get('/view/:url', function(req, res, next) {
   
   var dbParams = {
       TableName: 'MyToDoList',
@@ -25,15 +25,69 @@ router.get('/:url', function(req, res, next) {
     if (err) {
       console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
     } else {
-      console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+      console.debug("GetItem succeeded:", JSON.stringify(data, null, 2));
       res.render('toDoList', data.Item);
     }
   });
 });
 
+router.get('/update', function(req, res, next) {
+  
+  console.debug(req.query);
+  let currentUrl = req.query.url;
+  
+  if (!_.isEmpty(req.query)) {
+    let listString = req.query.list;
+    let listArray = JSON.parse(listString);
+    console.debug("After parsing");
+    console.debug(listArray);
+    console.debug(typeof listArray);
+    console.debug("This is what is added");
+    console.debug(req.query.whatToDo);
+    listArray.push(req.query.whatToDo);
+    console.debug(listArray);
+    
+    var params = {
+      TableName: "MyToDoList",
+      Item:{
+        "url": currentUrl,
+        "title": req.query.title,
+        "list": listArray
+      }
+    };
+    
+    console.debug("Updating a new list...");
+    docClient.put(params, function(err, data) {
+      if (err) {
+        console.error("Unable to update the list. Error JSON:", JSON.stringify(err, null, 2));
+      } else {
+        console.debug("Updated item:", JSON.stringify(data, null, 2));
+        var dbParams = {
+          TableName: 'MyToDoList',
+          Key: {
+            "url": currentUrl
+          }
+        };
+      
+        docClient.get(dbParams, function(err, data) {
+          if (err) {
+            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+          } else {
+            console.debug("GetItem succeeded:", JSON.stringify(data, null, 2));
+            res.render('toDoList', data.Item);
+          }
+        });
+      }
+    });
+  }
+  
+          
+});
+
+
 router.get('/', function(req, res, next) {
   
-  console.log(req.query);
+  console.debug(req.query);
   if (!_.isEmpty(req.query)) {
     var params = {
         TableName: "MyToDoList",
@@ -46,12 +100,12 @@ router.get('/', function(req, res, next) {
         }
     };
     
-    console.log("Adding a new item...");
+    console.debug("Adding a new item...");
     docClient.put(params, function(err, data) {
         if (err) {
             console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
         } else {
-            console.log("Added item:", JSON.stringify(data, null, 2));
+            console.debug("Added item:", JSON.stringify(data, null, 2));
         }
     });
   }
@@ -64,7 +118,7 @@ router.get('/', function(req, res, next) {
     }
   };
 
-  console.log("Scanning MyToDoList table.");
+  console.debug("Scanning MyToDoList table.");
   docClient.scan(params, onScan);
   
   let dataArray = [];
@@ -75,26 +129,26 @@ router.get('/', function(req, res, next) {
       if (err) {
           console.error("Unable to scan the table. Error JSON:", JSON.stringify(err, null, 2));
       } else {
-          console.log("Scan succeeded.");
+          console.debug("Scan succeeded.");
           // continue scanning if we have more movies, because
           // scan can retrieve a maximum of 1MB of data
           if (!_.isUndefined(data.LastEvaluatedKey)) {
               dataArray.push(data);
-              console.log("Scanning for more...");
+              console.debug("Scanning for more...");
               params.ExclusiveStartKey = data.LastEvaluatedKey;
               docClient.scan(params, onScan);
           } else {
             dataArray.push(data);
-            console.log("data: ");
-            console.log(data);
-            console.log("dataArray: ");
-            console.log(dataArray);
+            console.debug("data: ");
+            console.debug(data);
+            console.debug("dataArray: ");
+            console.debug(dataArray);
             dataArray.forEach(function(element){
               wholeDataArray.push(element.Items);
             });
             wholeDataArray = _.flattenDeep(wholeDataArray);
             wholeDataObject.Items = wholeDataArray;
-            console.log(wholeDataObject);
+            console.debug(wholeDataObject);
             res.render('wholeList', wholeDataObject);
           }
       }
