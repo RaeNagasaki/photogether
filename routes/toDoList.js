@@ -23,6 +23,7 @@ function getListItem(listUrl, res) {
       console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
     } else {
       console.debug("GetItem succeeded:", JSON.stringify(data, null, 2));
+      console.debug(data.Item);
       res.render('toDoList', data.Item);
     }
   });
@@ -89,6 +90,8 @@ router.get('/update', function(req, res, next) {
   if (!_.isEmpty(req.query)) {
     let listString = req.query.list;
     let listArray = JSON.parse(listString);
+    let doneListArray = JSON.parse(req.query.doneList);
+    
     console.debug("After parsing");
     console.debug(listArray);
     console.debug(typeof listArray);
@@ -102,7 +105,55 @@ router.get('/update', function(req, res, next) {
       Item:{
         "url": currentUrl,
         "title": req.query.title,
-        "list": listArray
+        "list": listArray,
+        "doneList": doneListArray
+      }
+    };
+    
+    console.debug("Updating a new list...");
+    docClient.put(params, function(err, data) {
+      if (err) {
+        console.error("Unable to update the list. Error JSON:", JSON.stringify(err, null, 2));
+      } else {
+        console.debug("Updated item:", JSON.stringify(data, null, 2));
+        getListItem(currentUrl, res);
+      }
+    });
+  }
+});
+
+router.get('/done', function(req, res, next) {
+  let currentUrl = req.query.url;
+  
+  if (!_.isEmpty(req.query)) {
+    let listString = req.query.list;
+    let listArray = JSON.parse(listString);
+    console.debug("After parsing");
+    console.debug(listArray);
+    console.debug(typeof listArray);
+    let doneListBeforeString = req.query.doneList;
+    let doneListBeforeArray = JSON.parse(doneListBeforeString);
+    let doneListArray = [];
+    let dataDone = req.query.item;
+    if (typeof dataDone === "string") {
+        doneListArray.push(dataDone);
+    } else {
+      doneListArray = dataDone;
+    }
+    console.debug("doneListArray");
+    console.debug(doneListArray);
+    doneListArray.forEach(function (element){
+      doneListBeforeArray.push(element);
+    });
+    listArray = listArray.filter(item => !doneListArray.includes(item))
+    
+    var params = {
+      TableName: "MyToDoList",
+      Item:{
+        "url": currentUrl,
+        "title": req.query.title,
+        "list": listArray,
+        "doneList": doneListBeforeArray
       }
     };
     
@@ -130,7 +181,8 @@ router.get('/', function(req, res, next) {
         "title": req.query.listTitle,
         "list":[
             req.query.whatToDo
-        ]
+        ],
+        "doneList":[]
       }
     };
     
