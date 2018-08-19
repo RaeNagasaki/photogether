@@ -17,7 +17,7 @@ function getListItem(listUrl, res) {
       "url": listUrl
     }
   };
-  
+
   docClient.get(dbParams, function(err, data) {
     if (err) {
       console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
@@ -28,7 +28,6 @@ function getListItem(listUrl, res) {
     }
   });
 }
-
 
 function scan(res) {
     var params = {
@@ -41,11 +40,11 @@ function scan(res) {
 
   console.debug("Scanning MyToDoList table.");
   docClient.scan(params, onScan);
-  
+
   let dataArray = [];
   let wholeDataArray = [];
   let wholeDataObject = {};
-  
+
   function onScan(err, data) {
     if (err) {
       console.error("Unable to scan the table. Error JSON:", JSON.stringify(err, null, 2));
@@ -76,6 +75,30 @@ function scan(res) {
   }
 }
 
+/* Delete an Item. */
+router.get('/delete', function(req, res, next) {
+  console.debug(req.query);
+  if (!_.isEmpty(req.query)) {
+    var params = {
+      TableName: "MyToDoList",
+      Key:{
+          "url": req.query.item
+      },
+    };
+
+    console.log("Attempting a conditional delete...");
+    docClient.delete(params, function(err, data) {
+        if (err) {
+            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+            scan(res);
+        }
+    });
+  } else {
+    scan(res);
+  }
+});
 
 /* GET users listing. */
 router.get('/view/:url', function(req, res, next) {
@@ -83,15 +106,14 @@ router.get('/view/:url', function(req, res, next) {
 });
 
 router.get('/update', function(req, res, next) {
-  
   console.debug(req.query);
   let currentUrl = req.query.url;
-  
+
   if (!_.isEmpty(req.query)) {
     let listString = req.query.list;
     let listArray = JSON.parse(listString);
     let doneListArray = JSON.parse(req.query.doneList);
-    
+
     console.debug("After parsing");
     console.debug(listArray);
     console.debug(typeof listArray);
@@ -99,7 +121,7 @@ router.get('/update', function(req, res, next) {
     console.debug(req.query.whatToDo);
     listArray.push(req.query.whatToDo);
     console.debug(listArray);
-    
+
     var params = {
       TableName: "MyToDoList",
       Item:{
@@ -109,7 +131,7 @@ router.get('/update', function(req, res, next) {
         "doneList": doneListArray
       }
     };
-    
+
     console.debug("Updating a new list...");
     docClient.put(params, function(err, data) {
       if (err) {
@@ -124,7 +146,7 @@ router.get('/update', function(req, res, next) {
 
 router.get('/done', function(req, res, next) {
   let currentUrl = req.query.url;
-  
+
   if (!_.isEmpty(req.query)) {
     let listString = req.query.list;
     let listArray = JSON.parse(listString);
@@ -146,7 +168,7 @@ router.get('/done', function(req, res, next) {
       doneListBeforeArray.push(element);
     });
     listArray = listArray.filter(item => !doneListArray.includes(item))
-    
+
     var params = {
       TableName: "MyToDoList",
       Item:{
@@ -156,7 +178,7 @@ router.get('/done', function(req, res, next) {
         "doneList": doneListBeforeArray
       }
     };
-    
+
     console.debug("Updating a new list...");
     docClient.put(params, function(err, data) {
       if (err) {
@@ -169,9 +191,7 @@ router.get('/done', function(req, res, next) {
   }
 });
 
-
 router.get('/', function(req, res, next) {
-  
   console.debug(req.query);
   if (!_.isEmpty(req.query)) {
     var params = {
@@ -185,7 +205,7 @@ router.get('/', function(req, res, next) {
         "doneList":[]
       }
     };
-    
+
     console.debug("Adding a new item...");
     docClient.put(params, function(err, data) {
       if (err) {
@@ -200,7 +220,4 @@ router.get('/', function(req, res, next) {
   }
 });
 
-  
 module.exports = router;
-
-
