@@ -1,0 +1,14 @@
+{
+    "esversion": 6,
+    "curly": true,
+    "eqeqeq": true,
+    "nocomma": true,
+    "undef": true,
+    "unused": true,
+    "varstmt": true,
+    "globals": {
+        "console": false,
+        "require": false,
+        "module": true
+    }
+}

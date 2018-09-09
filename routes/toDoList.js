@@ -1,17 +1,17 @@
-var express = require('express');
-var router = express.Router();
-var _ = require('lodash');
-var AWS = require("aws-sdk");
+let express = require('express');
+let router = express.Router();
+let _ = require('lodash');
+let AWS = require("aws-sdk");
 
 AWS.config.update({
   region: "us-west-2",
   endpoint: "https://dynamodb.us-west-2.amazonaws.com"
 });
 
-var docClient = new AWS.DynamoDB.DocumentClient();
+let docClient = new AWS.DynamoDB.DocumentClient();
 
 function getListItem(listUrl, res) {
-  var dbParams = {
+  let dbParams = {
     TableName: 'MyToDoList',
     Key: {
       "url": listUrl
@@ -30,7 +30,7 @@ function getListItem(listUrl, res) {
 }
 
 function scan(res) {
-    var params = {
+    let params = {
     TableName: "MyToDoList",
     ProjectionExpression: "title, #url",
     ExpressionAttributeNames: {
@@ -76,10 +76,10 @@ function scan(res) {
 }
 
 /* Delete an Item. */
-router.get('/delete', function(req, res, next) {
+router.get('/delete', function(req, res) {
   console.debug(req.query);
   if (!_.isEmpty(req.query)) {
-    var params = {
+    let params = {
       TableName: "MyToDoList",
       Key:{
           "url": req.query.item
@@ -101,11 +101,11 @@ router.get('/delete', function(req, res, next) {
 });
 
 /* GET users listing. */
-router.get('/view/:url', function(req, res, next) {
+router.get('/view/:url', function(req, res) {
   getListItem(req.params.url, res);
 });
 
-router.get('/update', function(req, res, next) {
+router.get('/update', function(req, res) {
   console.debug(req.query);
   let currentUrl = req.query.url;
 
@@ -122,7 +122,7 @@ router.get('/update', function(req, res, next) {
     listArray.push(req.query.whatToDo);
     console.debug(listArray);
 
-    var params = {
+    let params = {
       TableName: "MyToDoList",
       Item:{
         "url": currentUrl,
@@ -144,7 +144,7 @@ router.get('/update', function(req, res, next) {
   }
 });
 
-router.get('/done', function(req, res, next) {
+router.get('/done', function(req, res) {
   let currentUrl = req.query.url;
 
   if (!_.isEmpty(req.query)) {
@@ -167,9 +167,9 @@ router.get('/done', function(req, res, next) {
     doneListArray.forEach(function (element){
       doneListBeforeArray.push(element);
     });
-    listArray = listArray.filter(item => !doneListArray.includes(item))
+    listArray = listArray.filter(item => !doneListArray.includes(item));
 
-    var params = {
+    let params = {
       TableName: "MyToDoList",
       Item:{
         "url": currentUrl,
@@ -191,10 +191,10 @@ router.get('/done', function(req, res, next) {
   }
 });
 
-router.get('/', function(req, res, next) {
+router.get('/', function(req, res) {
   console.debug(req.query);
   if (!_.isEmpty(req.query)) {
-    var params = {
+    let params = {
       TableName: "MyToDoList",
       Item:{
         "url": req.query.listTitle.replace(/\s+/g, ""),

@@ -15,6 +15,7 @@
     "pug": "2.0.0-beta11"
   },
   "devDependencies": {
-    "aws-sdk": "^2.278.1"
+    "aws-sdk": "^2.278.1",
+    "jshint": "^2.9.6"
   }
 }
